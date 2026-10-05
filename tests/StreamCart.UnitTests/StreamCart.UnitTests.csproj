@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <PackageReference Include="coverlet.collector" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BuildingBlocks\StreamCart.BuildingBlocks\StreamCart.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\src\Services\Orders\StreamCart.Orders.Api\StreamCart.Orders.Api.csproj" />
+    <ProjectReference Include="..\..\src\Services\Inventory\StreamCart.Inventory.Api\StreamCart.Inventory.Api.csproj" />
+    <ProjectReference Include="..\..\src\Services\Payments\StreamCart.Payments.Api\StreamCart.Payments.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

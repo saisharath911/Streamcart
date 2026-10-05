@@ -1,0 +1,11 @@
+{
+  "app": "dotnet run --project StreamCart.Infra/StreamCart.Infra.csproj",
+  "watch": {
+    "include": ["**"],
+    "exclude": ["README.md", "cdk*.json", "**/bin", "**/obj", "cdk.out"]
+  },
+  "context": {
+    "@aws-cdk/aws-ecs:enableImdsBlockingDeprecatedFeature": false,
+    "@aws-cdk/core:target-partitions": ["aws"]
+  }
+}

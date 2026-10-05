@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/StreamCart.BuildingBlocks/StreamCart.BuildingBlocks.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/">
+    <Project Path="src/Services/Orders/StreamCart.Orders.Api/StreamCart.Orders.Api.csproj" />
+    <Project Path="src/Services/Inventory/StreamCart.Inventory.Api/StreamCart.Inventory.Api.csproj" />
+    <Project Path="src/Services/Payments/StreamCart.Payments.Api/StreamCart.Payments.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/StreamCart.UnitTests/StreamCart.UnitTests.csproj" />
+    <Project Path="tests/StreamCart.IntegrationTests/StreamCart.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="docker-compose.yml" />
+    <File Path="README.md" />
+  </Folder>
+</Solution>

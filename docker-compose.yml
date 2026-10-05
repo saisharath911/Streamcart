@@ -1,0 +1,113 @@
+# Full local environment: `docker compose up --build`, then open http://localhost:8080
+#   Saga Lab dashboard  http://localhost:8080
+#   Jaeger traces       http://localhost:16686
+#   APIs (direct)       orders :5101, inventory :5102, payments :5103
+
+x-service-env: &service-env
+  ASPNETCORE_ENVIRONMENT: Development
+  AWS_ACCESS_KEY_ID: test
+  AWS_SECRET_ACCESS_KEY: test
+  AWS_REGION: us-east-1
+  Messaging__ServiceUrl: http://localstack:4566
+  Messaging__TopicArn: arn:aws:sns:us-east-1:000000000000:streamcart-events
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+  Cors__AllowedOrigins__0: http://localhost:8080
+  Cors__AllowedOrigins__1: http://localhost:5173
+
+x-service-deps: &service-deps
+  postgres:
+    condition: service_healthy
+  localstack:
+    condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      retries: 20
+
+  localstack:
+    image: localstack/localstack:4
+    environment:
+      SERVICES: sns,sqs
+      AWS_DEFAULT_REGION: us-east-1
+    ports:
+      - "4566:4566"
+    volumes:
+      - ./deploy/localstack/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh:ro
+    healthcheck:
+      # Healthy only once the init script has created the topology.
+      test: ["CMD-SHELL", "awslocal sqs get-queue-url --queue-name streamcart-payments >/dev/null 2>&1"]
+      interval: 3s
+      retries: 40
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
+
+  orders:
+    build:
+      context: .
+      dockerfile: src/Services/Dockerfile
+      args:
+        SERVICE: Orders
+    environment:
+      <<: *service-env
+      ConnectionStrings__Default: Host=postgres;Database=streamcart_orders;Username=postgres;Password=postgres
+      Messaging__QueueName: streamcart-orders
+    ports:
+      - "5101:8080"
+    depends_on: *service-deps
+
+  inventory:
+    build:
+      context: .
+      dockerfile: src/Services/Dockerfile
+      args:
+        SERVICE: Inventory
+    environment:
+      <<: *service-env
+      ConnectionStrings__Default: Host=postgres;Database=streamcart_inventory;Username=postgres;Password=postgres
+      Messaging__QueueName: streamcart-inventory
+    ports:
+      - "5102:8080"
+    depends_on: *service-deps
+
+  payments:
+    build:
+      context: .
+      dockerfile: src/Services/Dockerfile
+      args:
+        SERVICE: Payments
+    environment:
+      <<: *service-env
+      ConnectionStrings__Default: Host=postgres;Database=streamcart_payments;Username=postgres;Password=postgres
+      Messaging__QueueName: streamcart-payments
+    ports:
+      - "5103:8080"
+    depends_on: *service-deps
+
+  dashboard:
+    build:
+      context: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - orders
+      - inventory
+      - payments
+
+volumes:
+  pgdata:
